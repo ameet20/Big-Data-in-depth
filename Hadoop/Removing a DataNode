@@ -1,0 +1,62 @@
+Step 1
+
+Login to master machine user where Hadoop is installed.
+
+$ su hadoop
+ 
+
+Step 2
+
+Before starting the cluster an exclude file must be configured. A key named dfs.hosts.exclude should be added to our$HADOOP-HOME/etc/hadoop/hdfs-site.xmlfile.
+
+NameNode’s local file system which contains a list of machines which are not permitted to connect to HDFS receives full path by this key and the value associated with it.
+
+<property>
+
+<name>dfs.hosts.exclude</name><value>/home/hadoop/hadoop-1.2.1/hdfs-exclude.txt</value><description>>DFS exclude</description>
+
+</property> 
+ 
+
+Step 3
+
+Hosts to decommission are determined.
+
+Additions should be made to file recognized by the hdfs-exclude.txt for every machine to be decommissioned which will prevent them from connecting to the NameNode.
+
+slave2.in
+ 
+
+Step 4
+
+Force configuration reload.
+
+“$HADOOP-HOME/bin/hadoop dfsadmin -refreshNodes” should be run
+
+$ $HADOOP-HOME/bin/hadoop dfsadmin -refreshNodes
+ 
+
+NameNode will be forced to re-read its configuration, this is inclusive of the newly updated ‘excludes’ file. Nodes will be decommissioned over a period of time, allowing time for each node’s blocks to be replicated onto machines which are scheduled to remain active.
+
+jps command output should be checked on slave2.in. DataNode process will shutdown automatically.
+
+ 
+
+Step 5
+
+Shutdown nodes.
+
+The decommissioned hardware can be carefully shut down for maintenance after the decommission process has been finished.
+
+$ $HADOOP-HOME/bin/hadoop dfsadmin -report
+ 
+
+Step 6
+
+Excludes are edited again and once the machines have been decommissioned, they can be removed from the ‘excludes’ file. “$HADOOP-HOME/bin/hadoop dfsadmin -refreshNodes” will read the excludes file back into the NameNode;DataNodes will rejoin the cluster after the maintenance has been completed, or if additional capacity is needed in the cluster again.
+
+To run/shutdown tasktracker
+
+$ $HADOOP-HOME/bin/hadoop-daemon.sh stop tasktracker
+
+$ $HADOOP-HOME/bin/hadoop-daemon.sh start tasktracker
