@@ -1,0 +1,357 @@
+Installing Java
+
+Syntax of java version command
+
+$ java -version
+ 
+Following output is presented.
+
+java version "1.7.0-71" 
+
+Java(TM) SE Runtime Environment (build 1.7.0-71-b13)
+
+Java HotSpot(TM) Client VM (build 25.0-b02, mixed mode)
+ 
+
+Creating User Account
+
+System user account on both master and slave systems should be created to use the Hadoop installation.
+
+# useradd hadoop 
+
+# passwd hadoop
+ 
+
+Mapping the nodes
+
+hosts file should be edited in /etc/ folder on all nodes and IP address of each system followed by their host names must be specified.
+
+# vi /etc/hosts
+ Enter the following lines in the /etc/hosts file.
+
+192.168.1.109 hadoop-master
+
+192.168.1.145 hadoop-slave-1
+
+192.168.56.1 hadoop-slave-2
+ 
+
+Configuring Key Based Login
+
+Ssh should be setup in each node such that they can converse with one another without any prompt for password.
+
+# su hadoop 
+
+$ ssh-keygen -t rsa 
+
+$ ssh-copy-id -i ~/.ssh/id-rsa.pub tutorialspoint@hadoop-master
+
+$ ssh-copy-id -i ~/.ssh/id-rsa.pub hadoop-tp1@hadoop-slave-1 
+
+$ ssh-copy-id -i ~/.ssh/id-rsa.pub hadoop-tp2@hadoop-slave-2
+
+$ chmod 0600 ~/.ssh/authorized-keys 
+
+$ exit
+ 
+
+Installing Hadoop
+
+Hadoop should be downloaded in the master server.
+
+# mkdir /opt/hadoop 
+
+# cd /opt/hadoop/ 
+
+# wget http://apache.mesi.com.ar/hadoop/common/hadoop-1.2.1/hadoop-1.2.0.tar.gz 
+
+# tar -xzf hadoop-1.2.0.tar.gz 
+
+# mv hadoop-1.2.0 hadoop 
+
+# chown -R hadoop /opt/hadoop 
+
+# cd /opt/hadoop/hadoop/
+ 
+
+Configuring Hadoop
+
+Hadoop server must be configured
+
+core-site.xml should be edited.
+
+<configuration> 
+
+<property> 
+
+<name>fs.default.name</name><value>hdfs://hadoop-master:9000/</value> 
+
+</property> 
+
+<property> 
+
+<name>dfs.permissions</name> 
+
+<value>false</value> 
+
+</property> 
+
+</configuration>
+ 
+
+hdfs-site.xml file should be editted.
+
+<configuration> 
+
+<property> 
+
+<name>dfs.data.dir</name> 
+
+<value>/opt/hadoop/hadoop/dfs/name/data</value> 
+
+<final>true</final> 
+
+</property> 
+
+<property> 
+
+<name>dfs.name.dir</name> 
+
+<value>/opt/hadoop/hadoop/dfs/name</value> 
+
+<final>true</final> 
+
+</property> 
+
+<property> 
+
+<name>dfs.replication</name> 
+
+<value>1</value> 
+
+</property> 
+
+</configuration>
+ 
+
+mapred-site.xml file should be editted.
+
+<configuration> 
+
+<property> 
+
+<name>mapred.job.tracker</name><value>hadoop-master:9001</value> 
+
+</property> 
+
+</configuration> 
+JAVA-HOME, HADOOP-CONF-DIR, and HADOOP-OPTS should be edited. 
+
+export JAVA-HOME=/opt/jdk1.7.0-17 
+
+export HADOOP-OPTS=-Djava.net.preferIPv4Stack=true
+
+export HADOOP-CONF-DIR=/opt/hadoop/hadoop/conf 
+ 
+
+Installing Hadoop on Slave Servers
+
+Hadoop should be installed on all the slave servers
+
+# su hadoop 
+
+$ cd /opt/hadoop 
+
+$ scp -r hadoop hadoop-slave-1:/opt/hadoop
+
+$ scp -r hadoop hadoop-slave-2:/opt/hadoop
+ 
+
+Configuring Hadoop on Master Server
+
+Master server should be  configured
+
+# su hadoop 
+
+$ cd /opt/hadoop/hadoop
+ 
+
+Master Node Configuration
+
+$ vi etc/hadoop/masters  
+
+hadoop-master
+ 
+
+Slave Node Configuration
+
+$ vi etc/hadoop/slaves 
+
+hadoop-slave-1
+
+hadoop-slave-2
+ 
+
+Name Node format on Hadoop Master
+
+# su hadoop 
+
+$ cd /opt/hadoop/hadoop 
+
+$ bin/hadoop namenode –format
+ 
+11/10/14 10:58:07 INFO namenode.NameNode: STARTUP-MSG:
+
+/************************************************************
+
+STARTUP-MSG: Starting NameNode
+
+STARTUP-MSG: host = hadoop-master/192.168.1.109
+
+STARTUP-MSG: args = [-format]
+
+STARTUP-MSG: version = 1.2.0
+
+STARTUP-MSG: build =
+
+https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2 -r 1479473; compiled by 'hortonfo' on Mon May 6 06:59:37 UTC 2013
+
+STARTUP-MSG: java = 1.7.0-71
+
+************************************************************/
+
+11/10/14 10:58:08 INFO util.GSet: Computing capacity for map BlocksMap editlog=/opt/hadoop/hadoop/dfs/name/current/edits
+
+………………………………………………….
+
+………………………………………………….
+
+………………………………………………….
+
+11/10/14 10:58:08 INFO common.Storage: Storage directory /opt/hadoop/hadoop/dfs/name has been successfully formatted.
+
+11/10/14 10:58:08 INFO namenode.NameNode: SHUTDOWN-MSG: /************************************************************
+
+SHUTDOWN-MSG: Shutting down NameNode at hadoop-master/192.168.1.15
+
+************************************************************/
+ 
+
+Hadoop Services
+
+Starting Hadoop services on the Hadoop-Master.
+
+$ cd $HADOOP-HOME/sbin 
+
+$ start-all.sh
+ 
+
+Addition of a New DataNode in the Hadoop Cluster
+
+Networking
+
+Add new nodes to an existing Hadoop cluster with some suitable network configuration. suppose the following network configuration.
+
+For New node Configuration:
+
+IP address : 192.168.1.103
+
+netmask : 255.255.255.0 
+
+hostname : slave3.in
+ 
+
+Adding a User and SSH Access
+
+Add a User
+
+“hadoop” user must be added and password of Hadoop user can be set to anything one wants.
+
+useradd hadoop
+
+passwd hadoop
+ 
+
+To be executed on master
+
+mkdir -p $HOME/.ssh
+
+chmod 700 $HOME/.ssh 
+
+ssh-keygen -t rsa -P '' -f $HOME/.ssh/id-rsa 
+
+cat $HOME/.ssh/id-rsa.pub >> $HOME/.ssh/authorized-keys
+
+chmod 644 $HOME/.ssh/authorized-keys 
+
+Copy the public key to new slave node in hadoop user $HOME directory 
+
+scp $HOME/.ssh/id-rsa.pub hadoop@192.168.1.103:/home/hadoop/ 
+ 
+
+To be executed on slaves
+
+su hadoop ssh -X hadoop@192.168.1.103
+Content of public key must be copied into file “$HOME/.ssh/authorized-keys” and then the permission for the same must be changed.
+
+cd $HOME 
+
+mkdir -p $HOME/.ssh
+
+chmod 700 $HOME/.ssh  
+
+cat id-rsa.pub >>$HOME/.ssh/authorized-keys
+
+chmod 644 $HOME/.ssh/authorized-keys
+ ssh login must be changed from the master machine. Possibility of ssh to the new node without a password from the master must be verified.
+
+ssh hadoop@192.168.1.103 or hadoop@slave3 
+ 
+
+Set Hostname of New Node
+
+Hostname is set in file /etc/sysconfig/network
+
+On new slave3 machine 
+
+NETWORKING=yes 
+
+HOSTNAME=slave3.in
+Machine must be restarted or hostname command should be run to a new machine with the respective hostname to make changes effective.
+
+On slave3 node machine:
+
+hostname slave3.in
+
+/etc/hosts must be updated on all machines of the cluster
+
+192.168.1.102 slave3.in slave3
+ ping the machine with hostnames to check whether it is resolving to IP.
+
+ping master.in 
+ 
+
+Start the DataNode on New Node
+
+Datanode daemon should be started manually using $HADOOP-HOME/bin/hadoop-daemon.sh script. Master(NameNode) should join the cluster after being automatically contacted. New node should be added to the conf/slaves file in the master server. New node will be recognized by script-based commands.
+
+ 
+
+Login to new node
+
+su hadoop or ssh -X hadoop@192.168.1.103
+ 
+
+HDFS is started on a newly added slave node
+
+./bin/hadoop-daemon.sh start datanode
+ 
+
+jps command output must be checked on a new node.
+
+$ jps 
+
+7141 DataNode 
+
+10312 Jps
+ 
