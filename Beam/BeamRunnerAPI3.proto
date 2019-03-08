@@ -1,0 +1,265 @@
+// A windowing strategy describes the window function, triggering, allowed
+// lateness, and accumulation mode for a PCollection.
+//
+// TODO: consider inlining field on PCollection
+message WindowingStrategy {
+
+  // (Required) The SdkFunctionSpec of the UDF that assigns windows,
+  // merges windows, and shifts timestamps before they are
+  // combined according to the OutputTime.
+  SdkFunctionSpec window_fn = 1;
+
+  // (Required) Whether or not the window fn is merging.
+  //
+  // This knowledge is required for many optimizations.
+  MergeStatus.Enum merge_status = 2;
+
+  // (Required) The coder for the windows of this PCollection.
+  string window_coder_id = 3;
+
+  // (Required) The trigger to use when grouping this PCollection.
+  Trigger trigger = 4;
+
+  // (Required) The accumulation mode indicates whether new panes are a full
+  // replacement for prior panes or whether they are deltas to be combined
+  // with other panes (the combine should correspond to whatever the upstream
+  // grouping transform is).
+  AccumulationMode.Enum accumulation_mode = 5;
+
+  // (Required) The OutputTime specifies, for a grouping transform, how to
+  // compute the aggregate timestamp. The window_fn will first possibly shift
+  // it later, then the OutputTime takes the max, min, or ignores it and takes
+  // the end of window.
+  //
+  // This is actually only for input to grouping transforms, but since they
+  // may be introduced in runner-specific ways, it is carried along with the
+  // windowing strategy.
+  OutputTime.Enum output_time = 6;
+
+  // (Required) Indicate when output should be omitted upon window expiration.
+  ClosingBehavior.Enum closing_behavior = 7;
+
+  // (Required) The duration, in milliseconds, beyond the end of a window at
+  // which the window becomes droppable.
+  int64 allowed_lateness = 8;
+
+  // (Required) Indicate whether empty on-time panes should be omitted.
+  OnTimeBehavior.Enum OnTimeBehavior = 9;
+
+  // (Required) Whether or not the window fn assigns inputs to exactly one window
+  //
+  // This knowledge is required for some optimizations
+  bool assigns_to_one_window = 10;
+}
+
+// Whether or not a PCollection's WindowFn is non-merging, merging, or
+// merging-but-already-merged, in which case a subsequent GroupByKey is almost
+// always going to do something the user does not want
+message MergeStatus {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // The WindowFn does not require merging.
+    // Examples: global window, FixedWindows, SlidingWindows
+    NON_MERGING = 1;
+
+    // The WindowFn is merging and the PCollection has not had merging
+    // performed.
+    // Example: Sessions prior to a GroupByKey
+    NEEDS_MERGE = 2;
+
+    // The WindowFn is merging and the PCollection has had merging occur
+    // already.
+    // Example: Sessions after a GroupByKey
+    ALREADY_MERGED = 3;
+  }
+}
+
+// Whether or not subsequent outputs of aggregations should be entire
+// replacement values or just the aggregation of inputs received since
+// the prior output.
+message AccumulationMode {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // The aggregation is discarded when it is output
+    DISCARDING = 1;
+
+    // The aggregation is accumulated across outputs
+    ACCUMULATING = 2;
+  }
+}
+
+// Controls whether or not an aggregating transform should output data
+// when a window expires.
+message ClosingBehavior {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // Emit output when a window expires, whether or not there has been
+    // any new data since the last output.
+    EMIT_ALWAYS = 1;
+
+    // Only emit output when new data has arrives since the last output
+    EMIT_IF_NONEMPTY = 2;
+  }
+}
+
+// Controls whether or not an aggregating transform should output data
+// when an on-time pane is empty.
+message OnTimeBehavior {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // Always fire the on-time pane. Even if there is no new data since
+    // the previous firing, an element will be produced.
+    FIRE_ALWAYS = 1;
+
+    // Only fire the on-time pane if there is new data since the previous firing.
+    FIRE_IF_NONEMPTY = 2;
+  }
+}
+
+// When a number of windowed, timestamped inputs are aggregated, the timestamp
+// for the resulting output.
+message OutputTime {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // The output has the timestamp of the end of the window.
+    END_OF_WINDOW = 1;
+
+    // The output has the latest timestamp of the input elements since
+    // the last output.
+    LATEST_IN_PANE = 2;
+
+    // The output has the earliest timestamp of the input elements since
+    // the last output.
+    EARLIEST_IN_PANE = 3;
+  }
+}
+
+// The different time domains in the Beam model.
+message TimeDomain {
+  enum Enum {
+    UNSPECIFIED = 0;
+
+    // Event time is time from the perspective of the data
+    EVENT_TIME = 1;
+
+    // Processing time is time from the perspective of the
+    // execution of your pipeline
+    PROCESSING_TIME = 2;
+
+    // Synchronized processing time is the minimum of the
+    // processing time of all pending elements.
+    //
+    // The "processing time" of an element refers to
+    // the local processing time at which it was emitted
+    SYNCHRONIZED_PROCESSING_TIME = 3;
+  }
+}
+
+// A small DSL for expressing when to emit new aggregations
+// from a GroupByKey or CombinePerKey
+//
+// A trigger is described in terms of when it is _ready_ to permit output.
+message Trigger {
+
+  // Ready when all subtriggers are ready.
+  message AfterAll {
+    repeated Trigger subtriggers = 1;
+  }
+
+  // Ready when any subtrigger is ready.
+  message AfterAny {
+    repeated Trigger subtriggers = 1;
+  }
+
+  // Starting with the first subtrigger, ready when the _current_ subtrigger
+  // is ready. After output, advances the current trigger by one.
+  message AfterEach {
+    repeated Trigger subtriggers = 1;
+  }
+
+  // Ready after the input watermark is past the end of the window.
+  //
+  // May have implicitly-repeated subtriggers for early and late firings.
+  // When the end of the window is reached, the trigger transitions between
+  // the subtriggers.
+  message AfterEndOfWindow {
+
+    // (Optional) A trigger governing output prior to the end of the window.
+    Trigger early_firings = 1;
+
+    // (Optional) A trigger governing output after the end of the window.
+    Trigger late_firings = 2;
+  }
+
+  // After input arrives, ready when the specified delay has passed.
+  message AfterProcessingTime {
+
+    // (Required) The transforms to apply to an arriving element's timestamp,
+    // in order
+    repeated TimestampTransform timestamp_transforms = 1;
+  }
+
+  // Ready whenever upstream processing time has all caught up with
+  // the arrival time of an input element
+  message AfterSynchronizedProcessingTime {
+  }
+
+  // The default trigger. Equivalent to Repeat { AfterEndOfWindow } but
+  // specially denoted to indicate the user did not alter the triggering.
+  message Default {
+  }
+
+  // Ready whenever the requisite number of input elements have arrived
+  message ElementCount {
+    int32 element_count = 1;
+  }
+
+  // Never ready. There will only be an ON_TIME output and a final
+  // output at window expiration.
+  message Never {
+  }
+
+  // Always ready. This can also be expressed as ElementCount(1) but
+  // is more explicit.
+  message Always {
+  }
+
+  // Ready whenever either of its subtriggers are ready, but finishes output
+  // when the finally subtrigger fires.
+  message OrFinally {
+
+    // (Required) Trigger governing main output; may fire repeatedly.
+    Trigger main = 1;
+
+    // (Required) Trigger governing termination of output.
+    Trigger finally = 2;
+  }
+
+  // Ready whenever the subtrigger is ready; resets state when the subtrigger
+  // completes.
+  message Repeat {
+    // (Require) Trigger that is run repeatedly.
+    Trigger subtrigger = 1;
+  }
+
+  // The full disjoint union of possible triggers.
+  oneof trigger {
+    AfterAll after_all = 1;
+    AfterAny after_any = 2;
+    AfterEach after_each = 3;
+    AfterEndOfWindow after_end_of_window = 4;
+    AfterProcessingTime after_processing_time = 5;
+    AfterSynchronizedProcessingTime after_synchronized_processing_time = 6;
+    Always always = 12;
+    Default default = 7;
+    ElementCount element_count = 8;
+    Never never = 9;
+    OrFinally or_finally = 10;
+    Repeat repeat = 11;
+  }
+}
