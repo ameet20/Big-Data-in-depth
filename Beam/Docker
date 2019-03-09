@@ -1,0 +1,15 @@
+# This image contains Ruby and dependencies required to build and test the Beam
+# website. It is used by tasks in build.gradle.
+
+FROM ruby:2.5
+
+WORKDIR /ruby
+RUN gem install bundler
+# Update buildDockerImage's inputs.files if you change this list.
+ADD Gemfile Gemfile.lock /ruby/
+RUN bundle install --deployment --path $GEM_HOME
+
+# Required for website testing using HTMLProofer.
+ENV LC_ALL C.UTF-8
+
+CMD sleep 3600
