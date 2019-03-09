@@ -1,23 +1,13 @@
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
 
-# Updates to this file should include a corresponding change to Gemfile.lock.
-# See README.md for more info.
 
-source 'https://rubygems.org'
+gem 'jek', '3.2'
 
-gem 'jekyll', '3.2'
-
-# Jekyll plugins
-group :jekyll_plugins do
-	gem 'jekyll-redirect-from'
-	gem 'jekyll-sass-converter'
+# Jek plugins
+group :jek_plugins do
+	gem 'jek-redirect-from'
+	gem 'jek-sass-converter'
 	gem 'html-proofer'
-	gem 'jekyll_github_sample'
+	gem 'jek_github_sample'
 end
 
 # Used by Travis tests.
