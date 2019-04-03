@@ -1,0 +1,45 @@
+<project name = "test" basedir=".">
+
+	<target name="run-test">
+		<junit 	printsummary="on" 
+				errorProperty="test.failed" 
+				failureProperty="test.failed" 
+				haltonfailure="yes" 
+				fork="true"
+				dir="${basedir}">
+			<formatter type="brief" usefile="false" />
+			<formatter type="xml" />
+			<classpath>
+				<path refid="test.build.class.path"/>
+				<pathelement location="${test.bin.dir}"/>					
+			</classpath>
+			<batchtest todir="${results.dir}">
+				<fileset dir="${test.bin.dir}">
+					<include name = "**/**/*Test.class"/>
+					<exclude name = "**/acceptance/**"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="run-acceptance-test">
+		<junit 	printsummary="on" 
+				errorProperty="test.failed" 
+				failureProperty="test.failed" 
+				haltonfailure="yes" 
+				fork="true"
+				dir="${basedir}">
+			<formatter type="brief" usefile="false" />
+			<formatter type="xml" />
+			<classpath>
+				<path refid="test.build.class.path"/>
+				<pathelement location="${test.bin.dir}"/>					
+			</classpath>
+			<batchtest todir="${results.dir}">
+				<fileset dir="${test.bin.dir}">
+					<include name = "**/acceptance/**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+</project>
