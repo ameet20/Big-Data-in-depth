@@ -1,0 +1,13 @@
+<project name = "package" basedir=".">
+
+	<target name="package">
+		<copy todir="${build.war.dir}">
+			<fileset dir="${war.dir}"/>
+		</copy>
+		<copy todir="${build.war.dir}\WEB-INF\lib">
+			<fileset dir="${build.lib.dir}"/>
+		</copy>		
+		<zip destfile="${war.file}" basedir="${build.war.dir}" includes="**/*.*" />				
+	</target>
+
+</project>
