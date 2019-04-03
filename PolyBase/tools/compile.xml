@@ -1,0 +1,48 @@
+<project name = "compile" basedir=".">
+
+	<dirname property="compile.basedir" file = "${ant.file.compile}"/>
+	<property file="build.properties" />
+	<property file="${compile.basedir}/build.properties" />	
+	
+	<property name="javac" value="${jdk.home}\bin\javac" />
+
+	<target name="compile" >	
+		<javac destdir="${bin.dir}"	
+				encoding="utf-8" 
+				source="${jdk.version}" 
+				target="${jdk.version}" 
+				nowarn="true" 
+				debug="true" 
+				debuglevel="lines,vars,source" 
+				executable="${javac}" 
+				compiler="modern" 
+				includeAntRuntime="false"
+				fork="true">
+			<src path="${app.src.dir}"/>
+			<classpath refid="build.class.path"/>
+		</javac>
+	</target>
+	
+	<target name="compile-test">			
+		<copy todir="${test.bin.dir}">
+			<fileset dir="${test.src.dir}">
+				<include name="**/*.properties" />			
+			</fileset>
+		</copy>
+		<javac	srcdir="${test.src.dir}" 
+					destdir="${test.bin.dir}" 
+					encoding="utf-8" 
+					source="${jdk.version}" 
+					target="${jdk.version}" 
+					nowarn="true" 
+					debug="true" 
+					debuglevel="lines,vars,source" 
+					executable="${javac}" 
+					compiler="modern" 
+					includeAntRuntime="false"
+					fork="true">
+				<classpath refid="test.build.class.path"/>
+			</javac>
+		</target>
+
+</project>
