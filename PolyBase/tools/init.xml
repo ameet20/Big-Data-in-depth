@@ -1,0 +1,52 @@
+<project name="init" basedir="." xmlns:ivy="antlib:fr.jayasoft.ivy.ant">
+
+	<!-- IVY -->
+	<dirname property="init.basedir" file = "${ant.file.init}"/>	
+	<property name="ivy.dir" value="${init.basedir}/ivy" />
+	
+	<path id="ivy.lib">
+		<pathelement location = "${ivy.dir}/ivy-2.2.0.jar"/>
+	</path>
+	
+	<taskdef uri="antlib:fr.jayasoft.ivy.ant" resource="fr/jayasoft/ivy/ant/antlib.xml" classpathref="ivy.lib"/>
+	
+	<property name = "app.src.dir" value="${basedir}/src" />
+	<property name = "test.src.dir" value="${basedir}/test" />
+	<property name = "build.dir" value="${basedir}/build" />
+	<property name = "ivy.lib.dir" value = "${build.dir}/ivy-lib" />
+	<property name = "bin.dir" value="${build.dir}/bin" />
+	<property name = "test.bin.dir" value="${build.dir}/test" />
+	<property name = "build.lib.dir" value="${build.dir}/lib" />
+	<property name = "results.dir" value = "${build.dir}/results"/>
+	<property name = "check.dir" value="${build.dir}/check" />
+	<property name = "instrument.bin.dir" value="${build.dir}/instruments" />
+	<property name = "coverage.dir" value ="${build.dir}/coverage" />
+			
+	<path id="build.class.path">
+		<fileset dir="${build.lib.dir}" includes="**/*.jar"/>
+	</path>
+	
+	<path id="test.build.class.path">
+			<fileset dir="${build.lib.dir}" includes="**/*.jar"/>
+			<fileset dir="${ivy.lib.dir}" includes="**/*.jar"/>
+		</path>
+	
+	<target name = "ivy" >
+		<ivy:settings file="${basedir}/ivysettings.xml"/>
+		<ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[revision].[ext]" conf="build,run-test,build-test"/>
+		<ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision].[ext]" conf="run"/>		
+	</target>
+		
+	<target name="clean" description="Clean this project">
+		<delete dir="${build.dir}"/>
+	</target>
+	
+	<target name = "init" >
+	  	<mkdir dir = "${build.dir}" />
+	 	<mkdir dir = "${bin.dir}" />
+		<mkdir dir = "${test.bin.dir}" />
+		<mkdir dir = "${results.dir}" />
+		<mkdir dir = "${build.lib.dir}" />
+	</target>	
+
+</project>
