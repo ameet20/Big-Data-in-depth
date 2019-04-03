@@ -1,0 +1,27 @@
+<project name = "check" basedir=".">
+
+	<dirname property="check.basedir" file = "${ant.file.check}"/>
+	
+	<property name="pmd.dir" value="${check.basedir}/pmd" />
+		
+	<path id="pmd.lib" >
+		<fileset dir = "${pmd.dir}">
+			<include name = "*.jar"/>
+		</fileset>		
+	</path>
+			
+	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
+	
+	<target name="check" >
+		<delete dir = "${check.dir}"/>
+		<mkdir dir = "${check.dir}"/>
+		<pmd shortFilenames="true" failonruleviolation="true">
+			<ruleset>${pmd.dir}/Magnapp-PMD-config.xml</ruleset>
+			<ruleset>basic</ruleset>
+			<formatter type="html" toFile="${check.dir}/pmd_report.html" />
+			<formatter type="xml" toFile="${check.dir}/pmd_report.xml" />
+			<fileset dir="${app.src.dir}" includes="**/*.java"/>
+			<fileset dir="${test.src.dir}" includes="**/*.java"/>
+		</pmd>				
+	</target>
+</project>
