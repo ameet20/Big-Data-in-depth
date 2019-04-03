@@ -1,0 +1,54 @@
+<project name = "deploy" basedir=".">
+
+	<dirname property="deploy.basedir" file = "${ant.file.deploy}"/>
+	
+	<!-- Catalina 	-->
+	<path id="catalina.lib">
+    	<fileset dir="${deploy.basedir}\catalina-ant">
+        	<include name="catalina-ant.jar"/>
+        	<include name="tomcat-coyote.jar"/>
+        	<include name="tomcat-util.jar"/>
+        	<include name="tomcat-juli.jar"/>
+    	</fileset>
+	</path>
+	
+	<taskdef name="catalina-deploy"    classname="org.apache.catalina.ant.DeployTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-list"      classname="org.apache.catalina.ant.ListTask" classpathref="catalina.lib"/>
+	<taskdef name="catalina-reload"    classname="org.apache.catalina.ant.ReloadTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-findleaks" classname="org.apache.catalina.ant.FindLeaksTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-resources" classname="org.apache.catalina.ant.ResourcesTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-start"     classname="org.apache.catalina.ant.StartTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-stop"      classname="org.apache.catalina.ant.StopTask" classpathref="catalina.lib"/>
+  	<taskdef name="catalina-undeploy"  classname="org.apache.catalina.ant.UndeployTask" classpathref="catalina.lib"/>
+	
+	<target name = "stop-webapp">
+		<catalina-stop 	url="${tomcat.manager.url}"
+					    username="${tomcat.username}"
+					    password="${tomcat.password}"
+					    path="/${webapp.name}"
+						failonerror="false"/>
+	</target>
+		
+	<target name = "start-webapp">
+		<catalina-start	url="${tomcat.manager.url}"
+						username="${tomcat.username}"
+						password="${tomcat.password}"
+						path="/${webapp.name}"/>
+	</target>
+	
+	<target name = "undeploy-webapp">
+		<catalina-undeploy 	url="${tomcat.manager.url}"
+				            username="${tomcat.username}"
+				            password="${tomcat.password}"
+				            path="/${webapp.name}"
+							failonerror="false"/>
+	</target>
+	
+	<target name = "deploy-webapp">
+		<catalina-deploy 	url="${tomcat.manager.url}"
+		            		username="${tomcat.username}"
+		            		password="${tomcat.password}"
+				            path="/${webapp.name}"
+				            war="file:${war.file}"/>
+	</target>
+</project>
