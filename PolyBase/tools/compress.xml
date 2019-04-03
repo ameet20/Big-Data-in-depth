@@ -1,0 +1,9 @@
+<project name = "compress" basedir=".">
+
+	<target name = "compress" >	
+		<jar jarfile ="${jar.file}">
+			<fileset dir="${bin.dir}"/>
+		</jar>
+	</target>
+
+</project>
