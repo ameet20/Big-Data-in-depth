@@ -1,0 +1,5 @@
+for relpath in $* ; do
+  D=`dirname "$relpath"`
+  B=`basename "$relpath"`  
+  echo "`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+done
