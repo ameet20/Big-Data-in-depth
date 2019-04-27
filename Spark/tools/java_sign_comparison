@@ -1,0 +1,22 @@
+set -e
+
+[[ $# -gt 0 ]] || {
+  echo "Usage: $(basename $0) <class> <class> ..."
+  echo ""
+  echo "# Example usage"
+  echo "SCALA_HOME=/scala/inst/29 SCALA_BUILD=/scala/inst/3 \\"
+  echo "  $(basename $0) scala.Function1 scala.runtime.AbstractFunction1"
+  exit 0
+}
+
+home1=$(cd ${SCALA_HOME:-/scala/inst/3} && pwd)
+home2=$(cd ${SCALA_BUILD:-$(dirname $BASH_SOURCE)/../build/pack} && pwd)
+
+echo "Comparing javac -Xprint for $@ based on '$home1' and '$home2'"
+tmpdir=$(mktemp -dt $(basename $BASH_SOURCE))
+
+cd $tmpdir
+javac -Xprint -cp $home1:$home1/lib/'*' "$@" > before.txt
+javac -Xprint -cp $home2:$home2/lib/'*' "$@" > after.txt
+
+diff before.txt after.txt && echo "No differences in javac -Xprint output."
