@@ -1,0 +1,62 @@
+<allocations>
+   <pool name="pool_with_invalid_min_share">
+        <minShare>INVALID_MIN_SHARE</minShare>
+        <weight>2</weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_invalid_weight">
+        <minShare>1</minShare>
+        <weight>INVALID_WEIGHT</weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_invalid_scheduling_mode">
+        <minShare>3</minShare>
+        <weight>2</weight>
+        <schedulingMode>INVALID_SCHEDULING_MODE</schedulingMode>
+    </pool>
+    <pool name="pool_with_non_uppercase_scheduling_mode">
+        <minShare>2</minShare>
+        <weight>1</weight>
+        <schedulingMode>fair</schedulingMode>
+    </pool>
+    <pool name="pool_with_NONE_scheduling_mode">
+        <minShare>1</minShare>
+        <weight>2</weight>
+        <schedulingMode>NONE</schedulingMode>
+    </pool>
+    <pool name="pool_with_whitespace_min_share">
+        <minShare>  </minShare>
+        <weight>2</weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_whitespace_weight">
+        <minShare>1</minShare>
+        <weight>  </weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_whitespace_scheduling_mode">
+        <minShare>3</minShare>
+        <weight>2</weight>
+        <schedulingMode>  </schedulingMode>
+    </pool>
+    <pool name="pool_with_empty_min_share">
+        <minShare></minShare>
+        <weight>3</weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_empty_weight">
+        <minShare>2</minShare>
+        <weight></weight>
+        <schedulingMode>FAIR</schedulingMode>
+    </pool>
+    <pool name="pool_with_empty_scheduling_mode">
+        <minShare>2</minShare>
+        <weight>2</weight>
+        <schedulingMode></schedulingMode>
+    </pool>
+    <pool name="pool_with_surrounded_whitespace">
+        <minShare> 3 </minShare>
+        <weight> 2 </weight>
+        <schedulingMode> FAIR </schedulingMode>
+    </pool>
+</allocations>
