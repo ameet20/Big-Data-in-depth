@@ -1,0 +1,37 @@
+- annotations:
+    description: The total estimated execution time of the ptransform
+    unit: msecs
+  labels:
+  - PTRANSFORM
+  type: beam:metrics:SumInt64
+  urn: beam:metric:ptransform_execution_time:total_msecs:v1
+- annotations:
+    description: The total estimated execution time of the start bundle function in
+      a pardo
+    unit: msecs
+  labels:
+  - PTRANSFORM
+  type: beam:metrics:SumInt64
+  urn: beam:metric:pardo_execution_time:start_bundle_msecs:v1
+- annotations:
+    description: The total estimated execution time of the process bundle function
+      in a pardo
+    unit: msecs
+  labels:
+  - PTRANSFORM
+  type: beam:metrics:SumInt64
+  urn: beam:metric:pardo_execution_time:process_bundle_msecs:v1
+- annotations:
+    description: The total estimated execution time of the finish bundle function
+      in a pardo
+    unit: msecs
+  labels:
+  - PTRANSFORM
+  type: beam:metrics:SumInt64
+  urn: beam:metric:pardo_execution_time:finish_bundle_msecs:v1
+- annotations:
+    description: The total elements counted for a metric.
+  labels:
+  - PTRANSFORM
+  type: beam:metrics:SumInt64
+  urn: beam:metric:element_count:v1
