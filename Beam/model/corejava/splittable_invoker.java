@@ -1,0 +1,72 @@
+package org.apache.beam.runners.core;
+
+import static org.apache.beam.vendor.guava.v20_0.com.google.common.base.Preconditions.checkArgument;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javax.annotation.Nullable;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.reflect.DoFnInvoker;
+import org.apache.beam.sdk.transforms.splittabledofn.RestrictionTracker;
+import org.apache.beam.sdk.util.WindowedValue;
+import org.joda.time.Instant;
+
+/**
+ * A runner-specific hook for invoking a {@link DoFn.ProcessElement} method for a splittable {@link
+ * DoFn}, in particular, allowing the runner to access the {@link RestrictionTracker}.
+ */
+public abstract class SplittableProcessElementInvoker<InputT, OutputT, RestrictionT, PositionT> {
+  /** Specifies how to resume a splittable {@link DoFn.ProcessElement} call. */
+  public class Result {
+    @Nullable private final RestrictionT residualRestriction;
+    private final DoFn.ProcessContinuation continuation;
+    private final @Nullable Instant futureOutputWatermark;
+
+    @SuppressFBWarnings(
+        value = "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
+        justification = "Spotbugs incorrectly thinks continuation is marked @Nullable")
+    public Result(
+        @Nullable RestrictionT residualRestriction,
+        DoFn.ProcessContinuation continuation,
+        @Nullable Instant futureOutputWatermark) {
+      checkArgument(continuation != null, "continuation must not be null");
+      this.continuation = continuation;
+      if (continuation.shouldResume()) {
+        checkArgument(
+            residualRestriction != null,
+            "residual restriction must not be null if continuation indicate it should resume");
+      }
+      this.residualRestriction = residualRestriction;
+      this.futureOutputWatermark = futureOutputWatermark;
+    }
+
+    /**
+     * Can be {@code null} only if {@link #getContinuation} specifies the call should not resume.
+     * However, the converse is not true: this can be non-null even if {@link #getContinuation} is
+     * {@link DoFn.ProcessContinuation#stop()}.
+     */
+    @Nullable
+    public RestrictionT getResidualRestriction() {
+      return residualRestriction;
+    }
+
+    public DoFn.ProcessContinuation getContinuation() {
+      return continuation;
+    }
+
+    public @Nullable Instant getFutureOutputWatermark() {
+      return futureOutputWatermark;
+    }
+  }
+
+  /**
+   * Invokes the {@link DoFn.ProcessElement} method using the given {@link DoFnInvoker} for the
+   * original {@link DoFn}, on the given element and with the given {@link RestrictionTracker}.
+   *
+   * @return Information on how to resume the call: residual restriction, a {@link
+   *     DoFn.ProcessContinuation}, and a future output watermark.
+   */
+  public abstract Result invokeProcessElement(
+      DoFnInvoker<InputT, OutputT> invoker,
+      WindowedValue<InputT> element,
+      RestrictionTracker<RestrictionT, PositionT> tracker);
+}
